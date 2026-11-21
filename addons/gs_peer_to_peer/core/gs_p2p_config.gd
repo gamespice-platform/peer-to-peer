@@ -111,7 +111,7 @@ enum Trust {
 
 
 func env_prefix() -> String:
-	return "DOT_P2P_"
+	return "GS_P2P_"
 
 
 func cli_prefix() -> String:

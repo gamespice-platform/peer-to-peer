@@ -23,7 +23,7 @@ extends Node
 ## This is where it went, built so that an install without it still parses, still runs,
 ## and says what is missing.
 
-const SERVICE := &"dot_p2p"
+const SERVICE := &"gs_p2p"
 const CHANNEL := "p2p"
 
 ## The session is up and the game may start.
@@ -416,7 +416,7 @@ func describe() -> Dictionary:
 
 func describe_lines() -> PackedStringArray:
 	var out := PackedStringArray()
-	out.append("dot-p2p  %s" % _state)
+	out.append("gs-p2p  %s" % _state)
 	if not available():
 		out.append("  UNAVAILABLE: %s" % unavailable_reason())
 	out.append("  me      %s" % local_id)

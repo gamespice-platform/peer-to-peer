@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="dot-peer-to-peer"
+config/name="gs-peer-to-peer"
 config/description="Peer-to-peer as a lobby problem: join codes, readiness, a host who is a player, deterministic host migration, and an honest account of what NAT will not do."
 run/main_scene="res://examples/p2p_selftest.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
@@ -23,7 +23,7 @@ window/size/viewport_height=900
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dot_peer_to_peer/plugin.cfg")
+enabled=PackedStringArray("res://addons/gs_peer_to_peer/plugin.cfg")
 
 [importer_defaults]
 

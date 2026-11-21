@@ -6,7 +6,7 @@ Part of the [**GameSpice**](https://gamespice.net) collection: modular, MIT-lice
 
 ## Install
 
-Copy `addons/dot_peer_to_peer/` and [GameSpice Core](https://github.com/gamespice-platform/core)'s `addons/dot_core/` into your project and enable dot-peer-to-peer in **Project > Project Settings > Plugins**. dot-core is the only dependency. WebRTC is optional and is reached by name at runtime.
+Copy `addons/gs_peer_to_peer/` and [GameSpice Core](https://github.com/gamespice-platform/core)'s `addons/gs_core/` into your project and enable gs-peer-to-peer in **Project > Project Settings > Plugins**. gs-core is the only dependency. WebRTC is optional and is reached by name at runtime.
 
 ## Use
 

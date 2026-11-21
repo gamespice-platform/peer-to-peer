@@ -1,6 +1,6 @@
 extends Node
 
-## Exercises dot-peer-to-peer with no network and, on this machine, no WebRTC either.
+## Exercises gs-peer-to-peer with no network and, on this machine, no WebRTC either.
 ##
 ## [b]That is not a gap in the suite — it is the shape of the addon.[/b] Everything that
 ## actually goes wrong with peer-to-peer is in the lobby: two people joining the same slot,
@@ -30,7 +30,7 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	_line("dot-peer-to-peer self-test")
+	_line("gs-peer-to-peer self-test")
 	_line("")
 
 	_test_config_is_honest()

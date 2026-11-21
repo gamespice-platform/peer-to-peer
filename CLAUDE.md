@@ -4,7 +4,7 @@ Sessions players host for each other over WebRTC: a lobby with join codes and a 
 
 Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is specific to peer-to-peer.
 
-**The distributable is `addons/dot_peer_to_peer/`.** It requires [GameSpice Core](../dot-core) and nothing else (`ln -s ../../dot-core/addons/dot_core addons/dot_core`, gitignored). WebRTC is an optional GDExtension and is reached without being named.
+**The distributable is `addons/gs_peer_to_peer/`.** It requires [GameSpice Core](../gs-core) and nothing else (`ln -s ../../gs-core/addons/gs_core addons/gs_core`, gitignored). WebRTC is an optional GDExtension and is reached without being named.
 
 ## Read before
 
@@ -17,15 +17,15 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is sp
 
 | Path | What |
 | --- | --- |
-| `core/dot_p2p_config.gd` | `GSP2PConfig`: rendezvous, ICE, `relay_servers`, codes, migration, `Trust` |
-| `core/dot_p2p_lobby.gd` | `GSP2PLobby`: members, readiness, codes (`ALPHABET`), `member_ids()`, `elect_host()` |
-| `core/dot_p2p_signaller.gd` | `GSP2PSignaller`: `host`, `join`, `send`, `leave` |
-| `core/dot_p2p_signaller_loopback.gd` | in-process signalling; static switchboards, `reset_all()` |
-| `core/dot_p2p_signaller_http.gd` | post and poll over `GSHttp`; the game calls `poll()` |
-| `runtime/dot_p2p_session.gd` | `GSP2PSession`: the node a game holds, the only file touching a transport |
+| `core/gs_p2p_config.gd` | `GSP2PConfig`: rendezvous, ICE, `relay_servers`, codes, migration, `Trust` |
+| `core/gs_p2p_lobby.gd` | `GSP2PLobby`: members, readiness, codes (`ALPHABET`), `member_ids()`, `elect_host()` |
+| `core/gs_p2p_signaller.gd` | `GSP2PSignaller`: `host`, `join`, `send`, `leave` |
+| `core/gs_p2p_signaller_loopback.gd` | in-process signalling; static switchboards, `reset_all()` |
+| `core/gs_p2p_signaller_http.gd` | post and poll over `GSHttp`; the game calls `poll()` |
+| `runtime/gs_p2p_session.gd` | `GSP2PSession`: the node a game holds, the only file touching a transport |
 | `examples/p2p_selftest.tscn` | the suite: no network, no WebRTC needed |
 
-Paths except `examples/` are in `addons/dot_peer_to_peer/`.
+Paths except `examples/` are in `addons/gs_peer_to_peer/`.
 
 ## Running and testing
 

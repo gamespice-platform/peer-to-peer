@@ -6,13 +6,13 @@ extends EditorPlugin
 ## No autoloads: two peers in one process is how this addon is tested, and a global would
 ## make them one.
 
-const _ICON := "res://addons/dot_peer_to_peer/icon_placeholder.svg"
+const _ICON := "res://addons/gs_peer_to_peer/icon_placeholder.svg"
 
 const _TYPES := [
 	[
 		"GSP2PSession",
 		"Node",
-		"res://addons/dot_peer_to_peer/runtime/dot_p2p_session.gd",
+		"res://addons/gs_peer_to_peer/runtime/gs_p2p_session.gd",
 	],
 ]
 

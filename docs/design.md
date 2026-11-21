@@ -1,6 +1,6 @@
 # Design
 
-Why dot-peer-to-peer is shaped the way it is. The one-line rules are in [CLAUDE.md](../CLAUDE.md).
+Why gs-peer-to-peer is shaped the way it is. The one-line rules are in [CLAUDE.md](../CLAUDE.md).
 
 ## Why it is not a transport in GameSpice Core
 
