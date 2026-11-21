@@ -1,15 +1,15 @@
-class_name DotP2PSession
+class_name GSP2PSession
 extends Node
 
 ## A peer-to-peer session: a lobby, a signaller, and a transport nobody may name.
 ##
 ## [codeblock]
-## var p2p := DotP2PSession.new()
+## var p2p := GSP2PSession.new()
 ## p2p.config = my_config
-## p2p.signaller = DotP2PSignallerHttp.new(url)
+## p2p.signaller = GSP2PSignallerHttp.new(url)
 ## add_child(p2p)
 ##
-## var res: DotResult = await p2p.host("Ada")   # returns a join code
+## var res: GSResult = await p2p.host("Ada")   # returns a join code
 ## # or
 ## await p2p.join("K7M4PX", "Bob")
 ## [/codeblock]
@@ -18,7 +18,7 @@ extends Node
 ## Godot's WebRTC ships as an optional GDExtension on native platforms and is built into
 ## the web export, so on a desktop build without it every WebRTC class is simply absent —
 ## and a script that so much as [i]mentions[/i] the identifier fails to compile. GameSpice Core's
-## `DotTransportENet` reaches ENet exactly this way for the same reason on web, and
+## `GSTransportENet` reaches ENet exactly this way for the same reason on web, and
 ## GameSpice Core's own notes said a WebRTC transport "would be untestable in a default install".
 ## This is where it went, built so that an install without it still parses, still runs,
 ## and says what is missing.
@@ -36,14 +36,14 @@ signal membership_changed(members: PackedStringArray)
 signal host_changed(from_id: StringName, to_id: StringName)
 
 ## It ended, and why.
-signal ended(res: DotResult)
+signal ended(res: GSResult)
 
-@export var config: DotP2PConfig = null
+@export var config: GSP2PConfig = null
 
 @export var register_as_service: bool = true
 
-## Where offers and answers go. Any [DotP2PSignaller].
-var signaller: DotP2PSignaller = null
+## Where offers and answers go. Any [GSP2PSignaller].
+var signaller: GSP2PSignaller = null
 
 ## This peer's own id. Pseudonymous, and not an account id.
 ##
@@ -52,7 +52,7 @@ var signaller: DotP2PSignaller = null
 ## An account id there is a permanent identifier a stranger can collect.
 var local_id: StringName = &""
 
-var lobby: DotP2PLobby = null
+var lobby: GSP2PLobby = null
 
 var _peer: Object = null
 var _started_ms := 0
@@ -61,12 +61,12 @@ var _last_seen: Dictionary = {}
 
 
 func _init() -> void:
-	lobby = DotP2PLobby.new()
+	lobby = GSP2PLobby.new()
 
 
-func setup() -> DotResult:
+func setup() -> GSResult:
 	if config == null:
-		config = DotP2PConfig.new()
+		config = GSP2PConfig.new()
 	var res := config.validate()
 	if not res.ok:
 		return res.wrap("p2p config")
@@ -76,14 +76,14 @@ func setup() -> DotResult:
 		local_id = _make_local_id()
 
 	if register_as_service:
-		DotRegistry.register(SERVICE, self)
-	return DotResult.success(null)
+		GSRegistry.register(SERVICE, self)
+	return GSResult.success(null)
 
 
 func _exit_tree() -> void:
 	leave()
 	if register_as_service:
-		DotRegistry.unregister_instance(SERVICE, self)
+		GSRegistry.unregister_instance(SERVICE, self)
 
 
 ## A stable-enough pseudonymous id for this machine and session.
@@ -91,7 +91,7 @@ func _exit_tree() -> void:
 ## `OS.get_unique_id()` is deliberately not used. It **pushes an error and then returns the
 ## empty string** on web and iOS — a red line on the page a player has open, naming a
 ## function nobody called on purpose — which is why GameSpice Core grew
-## `DotPlatform.has_unique_id()`. And a hardware id in a lobby is a permanent identifier a
+## `GSPlatform.has_unique_id()`. And a hardware id in a lobby is a permanent identifier a
 ## stranger can collect, which is the whole reason GameSpice User is pseudonymous per scope.
 func _make_local_id() -> StringName:
 	var bytes := PackedByteArray()
@@ -117,7 +117,7 @@ static func available() -> bool:
 static func unavailable_reason() -> String:
 	if available():
 		return ""
-	if DotPlatform.is_web():
+	if GSPlatform.is_web():
 		return "this browser or export template has no WebRTC"
 	return (
 		"the WebRTC GDExtension is not installed in this build; "
@@ -129,19 +129,19 @@ static func unavailable_reason() -> String:
 
 ## Starts a session and returns its join code. A coroutine: await it.
 ##
-## [b]Awaited because a signaller's host() may be one.[/b] [DotP2PSignallerHttp]'s is -- it
+## [b]Awaited because a signaller's host() may be one.[/b] [GSP2PSignallerHttp]'s is -- it
 ## is a POST -- and calling a coroutine without `await` is not a late result, it is a
 ## SCRIPT ERROR ("Trying to call an async function without await") that aborts this
 ## function and hands the caller null, with the session left idle. Every test used the
 ## loopback signaller, which answers synchronously, so the one real signaller never worked
 ## and nothing said so. Awaiting a synchronous one costs nothing: it does not suspend.
-func host(display_name: String) -> DotResult:
+func host(display_name: String) -> GSResult:
 	var guard := _precheck()
 	if not guard.ok:
 		return guard
 
 	var index := 0
-	var code := DotP2PLobby.make_code(config.code_length, func(_i: int) -> float:
+	var code := GSP2PLobby.make_code(config.code_length, func(_i: int) -> float:
 		index += 1
 		return randf()
 	)
@@ -156,7 +156,7 @@ func host(display_name: String) -> DotResult:
 	# that merely REMEMBERED the flag would be one whose whole documented effect -- being
 	# findable without the code -- happens nowhere: the setting was read by nothing at all
 	# until this line, which is this family's most repeated bug.
-	var res: DotResult = await signaller.host(code, {
+	var res: GSResult = await signaller.host(code, {
 		"name": display_name,
 		"max": config.max_peers,
 		"discoverable": config.discoverable,
@@ -175,29 +175,29 @@ func host(display_name: String) -> DotResult:
 		# five and fifteen per cent of pairs cannot find a direct path, and with no relay
 		# configured those players will fail -- which is a deployment decision, not a bug,
 		# and one somebody should make deliberately.
-		DotLog.info(
+		GSLog.info(
 			CHANNEL,
 			"no relay configured: peers behind strict NAT will not be able to join",
 			{"code": code}
 		)
 
 	ready_to_play.emit(code)
-	return DotResult.success(code)
+	return GSResult.success(code)
 
 
 ## Joins an existing session by code. A coroutine, for the reason [method host] is.
-func join(code: String, display_name: String) -> DotResult:
+func join(code: String, display_name: String) -> GSResult:
 	var guard := _precheck()
 	if not guard.ok:
 		return guard
 
 	var tidy := code.strip_edges().to_upper()
-	if not DotP2PLobby.is_code_shaped(tidy, config.code_length):
+	if not GSP2PLobby.is_code_shaped(tidy, config.code_length):
 		# Refused on shape before anything is looked up. A lookup is how an attacker finds
 		# out which codes exist, and "that is not a code" is a better answer for a player
 		# who typed one wrong than "no such session".
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"'%s' is not a join code" % code,
 			"codes are %d characters from an unambiguous alphabet" % config.code_length
 		)
@@ -207,7 +207,7 @@ func join(code: String, display_name: String) -> DotResult:
 	# call never sees any of it -- which leaves a joiner alone in a lobby that has four
 	# people in it.
 	_bind_signaller()
-	var res: DotResult = await signaller.join(tidy, {"name": display_name})
+	var res: GSResult = await signaller.join(tidy, {"name": display_name})
 	if not res.ok:
 		return res.wrap("joining")
 
@@ -219,7 +219,7 @@ func join(code: String, display_name: String) -> DotResult:
 	_settle_host()
 	_state = &"joining"
 	_started_ms = Time.get_ticks_msec()
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 func leave() -> void:
@@ -240,14 +240,14 @@ func is_host() -> bool:
 	return lobby.is_host(local_id)
 
 
-func _precheck() -> DotResult:
+func _precheck() -> GSResult:
 	if signaller == null:
-		return DotResult.fail(DotError.CODE_STATE, "no signaller: there is nowhere to meet")
+		return GSResult.fail(GSError.CODE_STATE, "no signaller: there is nowhere to meet")
 	if config == null:
-		return DotResult.fail(DotError.CODE_STATE, "not set up")
+		return GSResult.fail(GSError.CODE_STATE, "not set up")
 	if _state != &"idle":
-		return DotResult.fail(DotError.CODE_STATE, "already in a session")
-	return DotResult.success(null)
+		return GSResult.fail(GSError.CODE_STATE, "already in a session")
+	return GSResult.success(null)
 
 
 ## Works out who hosts, when nobody has said.
@@ -280,10 +280,10 @@ func _bind_signaller() -> void:
 ## Returns a failure rather than null so the reason travels. A game that cannot do
 ## peer-to-peer should say which of the two reasons it is — no extension, or no browser
 ## support — because they have different answers and a player can act on both.
-func create_peer() -> DotResult:
+func create_peer() -> GSResult:
 	if not available():
-		return DotResult.fail(
-			DotError.CODE_UNSUPPORTED,
+		return GSResult.fail(
+			GSError.CODE_UNSUPPORTED,
 			"this build cannot do peer-to-peer",
 			unavailable_reason()
 		)
@@ -294,9 +294,9 @@ func create_peer() -> DotResult:
 	# of errors in files nobody touched. Exactly how GameSpice Core reaches ENet on web.
 	var peer: Object = ClassDB.instantiate("WebRTCMultiplayerPeer")
 	if peer == null:
-		return DotResult.fail(DotError.CODE_UNSUPPORTED, "WebRTC would not instantiate")
+		return GSResult.fail(GSError.CODE_UNSUPPORTED, "WebRTC would not instantiate")
 	_peer = peer
-	return DotResult.success(peer)
+	return GSResult.success(peer)
 
 
 ## The engine peer, for a game to hand to its own multiplayer API. Null when there is none.
@@ -331,7 +331,7 @@ func _on_signal(message: Dictionary) -> void:
 			# is never a reason to believe a claim over the arithmetic.
 			var expected := lobby.elect_host()
 			if from != expected:
-				DotLog.warn(
+				GSLog.warn(
 					CHANNEL,
 					"a peer claimed to be host and the election says otherwise",
 					{"claimed": String(from), "elected": String(expected)}
@@ -358,7 +358,7 @@ func _on_peer_gone(id: StringName) -> void:
 	var next := lobby.migrate_from(id)
 	membership_changed.emit(lobby.member_ids())
 	if next == &"":
-		ended.emit(DotResult.fail(DotError.CODE_STATE, "everybody has left"))
+		ended.emit(GSResult.fail(GSError.CODE_STATE, "everybody has left"))
 		return
 	host_changed.emit(previous, next)
 	if next == local_id and signaller != null:
@@ -372,7 +372,7 @@ func _on_signaller_lost(reason: String) -> void:
 	# The rendezvous going away is not the session going away. Once peers are connected
 	# they do not need it, and treating its loss as an end is how a game drops everybody
 	# because a web server restarted.
-	DotLog.info(CHANNEL, "the signaller disconnected", {"why": reason, "state": String(_state)})
+	GSLog.info(CHANNEL, "the signaller disconnected", {"why": reason, "state": String(_state)})
 
 
 func _process(_delta: float) -> void:
@@ -386,7 +386,7 @@ func _process(_delta: float) -> void:
 		var why := "could not reach the host"
 		if not config.has_relay():
 			why += "; no relay is configured, so peers behind strict NAT cannot connect"
-		ended.emit(DotResult.fail(DotError.CODE_TIMEOUT, why))
+		ended.emit(GSResult.fail(GSError.CODE_TIMEOUT, why))
 		return
 
 	if not config.migrate_host or lobby.host_id == local_id:

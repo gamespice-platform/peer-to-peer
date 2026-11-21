@@ -8,7 +8,7 @@ What building GameSpice Peer-to-Peer found. Three forms of one bug: an answer th
 
 ## It did not wait for the answer
 
-`host()` and `join()` called `signaller.host()` / `join()` without `await`, and `DotP2PSignallerHttp`'s are coroutines. In Godot 4.7 that is not a late result but a script error ("Trying to call an async function without await") that aborts `host()` and hands the caller null with the session idle. Every test used the loopback signaller, which answers synchronously, so the one real signaller had never worked. The suite's "The HTTP signaller answers later" section now runs it over a `DotHttp` that answers a frame later.
+`host()` and `join()` called `signaller.host()` / `join()` without `await`, and `GSP2PSignallerHttp`'s are coroutines. In Godot 4.7 that is not a late result but a script error ("Trying to call an async function without await") that aborts `host()` and hands the caller null with the session idle. Every test used the loopback signaller, which answers synchronously, so the one real signaller had never worked. The suite's "The HTTP signaller answers later" section now runs it over a `GSHttp` that answers a frame later.
 
 ## `add_member` decided who hosts
 

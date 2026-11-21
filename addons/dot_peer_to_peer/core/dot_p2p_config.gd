@@ -1,6 +1,6 @@
 @tool
-class_name DotP2PConfig
-extends DotConfig
+class_name GSP2PConfig
+extends GSConfig
 
 ## Everything a peer-to-peer session needs to be told, including the honest parts.
 ##
@@ -43,7 +43,7 @@ extends DotConfig
 ## ships one by default and why "peer-to-peer so we do not need servers" is not a complete
 ## plan.
 ##
-## With none configured, [DotP2PSession] fails those pairs [i]quickly and by name[/i]
+## With none configured, [GSP2PSession] fails those pairs [i]quickly and by name[/i]
 ## rather than hanging, because "we could not find a route to that player" is a thing a
 ## person can act on and a spinner is not.
 @export var relay_servers: Array[String] = []
@@ -123,21 +123,21 @@ func sensitive_keys() -> PackedStringArray:
 	return PackedStringArray(["relay_password", "relay_username"])
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if code_length < 4:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"a join code of %d characters is guessable" % code_length
 		)
 	if max_peers < 2:
-		return DotResult.fail(DotError.CODE_INVALID, "a session for fewer than two")
+		return GSResult.fail(GSError.CODE_INVALID, "a session for fewer than two")
 	if migrate_host and host_timeout_sec < 1.0:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"a host timeout under a second will fire on a hiccup",
 			"two peers that both think they are the host is a split session"
 		)
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## The ICE server list, in the shape the engine's WebRTC wants.

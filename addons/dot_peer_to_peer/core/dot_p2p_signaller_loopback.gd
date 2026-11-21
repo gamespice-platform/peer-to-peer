@@ -1,5 +1,5 @@
-class_name DotP2PSignallerLoopback
-extends DotP2PSignaller
+class_name GSP2PSignallerLoopback
+extends GSP2PSignaller
 
 ## Two or more signallers in one process, wired to each other. For suites and split screen.
 ##
@@ -24,22 +24,22 @@ func _init(p_id: StringName) -> void:
 	id = p_id
 
 
-func host(code: String, info: Dictionary) -> DotResult:
+func host(code: String, info: Dictionary) -> GSResult:
 	if _switchboards.has(code):
-		return DotResult.fail(DotError.CODE_STATE, "that code is already in use")
+		return GSResult.fail(GSError.CODE_STATE, "that code is already in use")
 	_switchboards[code] = {"peers": {id: self}, "info": info}
 	_code = code
 	_joined = true
-	return DotResult.success(code)
+	return GSResult.success(code)
 
 
-func join(code: String, info: Dictionary) -> DotResult:
+func join(code: String, info: Dictionary) -> GSResult:
 	if not _switchboards.has(code):
-		return DotResult.fail(DotError.CODE_INVALID, "no session with that code")
+		return GSResult.fail(GSError.CODE_INVALID, "no session with that code")
 	var board: Dictionary = _switchboards[code]
 	var peers: Dictionary = board["peers"]
 	if peers.has(id):
-		return DotResult.fail(DotError.CODE_STATE, "already joined")
+		return GSResult.fail(GSError.CODE_STATE, "already joined")
 	peers[id] = self
 	_code = code
 	_joined = true
@@ -53,11 +53,11 @@ func join(code: String, info: Dictionary) -> DotResult:
 		# Not this class's own name. A script that names itself in an expression, loaded after
 		# its base, cuts Godot 4.7.2's exit teardown short and leaks every script loaded before
 		# it. See docs/gdscript-hazards.md, "A script that names itself".
-		(peers[other_id] as DotP2PSignaller).received.emit({
+		(peers[other_id] as GSP2PSignaller).received.emit({
 			"from": String(id), "kind": "joined", "payload": info
 		})
 		received.emit({"from": String(other_id), "kind": "present", "payload": {}})
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## What a lobby announced about itself, or an empty dictionary.
@@ -90,20 +90,20 @@ static func listed_codes() -> PackedStringArray:
 	return out
 
 
-func send(to: StringName, kind: StringName, payload: Dictionary) -> DotResult:
+func send(to: StringName, kind: StringName, payload: Dictionary) -> GSResult:
 	if not _joined or not _switchboards.has(_code):
-		return DotResult.fail(DotError.CODE_STATE, "not in a session")
+		return GSResult.fail(GSError.CODE_STATE, "not in a session")
 	var peers: Dictionary = (_switchboards[_code] as Dictionary)["peers"]
 	var message := {"from": String(id), "kind": String(kind), "payload": payload.duplicate(true)}
 	if to == &"":
 		for other_id in peers.keys():
 			if other_id != id:
-				(peers[other_id] as DotP2PSignaller).received.emit(message)
-		return DotResult.success(null)
+				(peers[other_id] as GSP2PSignaller).received.emit(message)
+		return GSResult.success(null)
 	if not peers.has(to):
-		return DotResult.fail(DotError.CODE_INVALID, "'%s' is not in this session" % to)
-	(peers[to] as DotP2PSignaller).received.emit(message)
-	return DotResult.success(null)
+		return GSResult.fail(GSError.CODE_INVALID, "'%s' is not in this session" % to)
+	(peers[to] as GSP2PSignaller).received.emit(message)
+	return GSResult.success(null)
 
 
 func leave() -> void:
@@ -113,7 +113,7 @@ func leave() -> void:
 	var peers: Dictionary = board["peers"]
 	peers.erase(id)
 	for other_id in peers.keys():
-		(peers[other_id] as DotP2PSignaller).received.emit({
+		(peers[other_id] as GSP2PSignaller).received.emit({
 			"from": String(id), "kind": "left", "payload": {}
 		})
 	if peers.is_empty():

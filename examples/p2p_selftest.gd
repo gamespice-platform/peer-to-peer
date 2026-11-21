@@ -25,7 +25,7 @@ var _section_count := 0
 
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
+	GSLog.set_level(GSLog.Level.ERROR)
 	_run()
 
 
@@ -66,7 +66,7 @@ func _run() -> void:
 func _test_config_is_honest() -> void:
 	_section("The configuration says the uncomfortable things out loud")
 
-	var c := DotP2PConfig.new()
+	var c := GSP2PConfig.new()
 	_check(c.validate().ok, "a default configuration validates")
 
 	# The one nobody puts in their marketing. Five to fifteen per cent of pairs cannot
@@ -106,7 +106,7 @@ func _test_config_is_honest() -> void:
 func _test_codes() -> void:
 	_section("Join codes, and the characters that are not in them")
 
-	var code := DotP2PLobby.make_code(6, func(i: int) -> float: return float(i) / 6.0)
+	var code := GSP2PLobby.make_code(6, func(i: int) -> float: return float(i) / 6.0)
 	_check(code.length() == 6, "a code is the length asked for")
 
 	# The commonest support request any game with a join code has is somebody reading it
@@ -114,21 +114,21 @@ func _test_codes() -> void:
 	var banned := "01OIl5S".replace("5", "").replace("S", "")
 	var clean := true
 	for i in range(200):
-		var c := DotP2PLobby.make_code(8, func(_j: int) -> float: return randf())
+		var c := GSP2PLobby.make_code(8, func(_j: int) -> float: return randf())
 		for ch in banned:
 			if c.contains(ch):
 				clean = false
 	_check(clean, "and never contains 0, 1, O, I or l, which cannot be read aloud reliably")
 
-	_check(DotP2PLobby.is_code_shaped("K7M4PX", 6), "a well-formed code is recognised")
-	_check(not DotP2PLobby.is_code_shaped("K7M4P", 6), "a short one is not")
-	_check(not DotP2PLobby.is_code_shaped("K7M4PO", 6), "nor one with a letter that is not in the alphabet")
-	_check(not DotP2PLobby.is_code_shaped("", 6), "nor an empty one")
+	_check(GSP2PLobby.is_code_shaped("K7M4PX", 6), "a well-formed code is recognised")
+	_check(not GSP2PLobby.is_code_shaped("K7M4P", 6), "a short one is not")
+	_check(not GSP2PLobby.is_code_shaped("K7M4PO", 6), "nor one with a letter that is not in the alphabet")
+	_check(not GSP2PLobby.is_code_shaped("", 6), "nor an empty one")
 
 	# Shape is checked before anything is looked up: a lookup is how somebody finds out
 	# which codes exist, and "that is not a code" is a better answer for a typo anyway.
 	var s := _session(&"a")
-	var res: DotResult = await s.join("nope", "Ada")
+	var res: GSResult = await s.join("nope", "Ada")
 	_check(not res.ok, "a malformed code is refused")
 	_check(
 		res.error.message.contains("not a join code"),
@@ -142,7 +142,7 @@ func _test_codes() -> void:
 func _test_lobby() -> void:
 	_section("The lobby, which is where peer-to-peer actually goes wrong")
 
-	var l := DotP2PLobby.new()
+	var l := GSP2PLobby.new()
 	l.max_peers = 3
 	_check(l.add_member(&"ada", "Ada", 100).ok, "somebody joins")
 	# Deliberately NOT "and so becomes the host". A lobby that fills in an empty host
@@ -169,7 +169,7 @@ func _test_lobby() -> void:
 	l.set_ready(&"bob", true)
 	_check(l.all_ready(), "and both is")
 
-	var empty := DotP2PLobby.new()
+	var empty := GSP2PLobby.new()
 	_check(not empty.all_ready(), "an empty lobby is not 'all ready', which is the answer that starts a match with nobody in it")
 
 	_check(l.describe_lines().size() == 3, "it describes itself, one line per member")
@@ -180,7 +180,7 @@ func _test_lobby() -> void:
 func _test_election() -> void:
 	_section("Everybody elects the same host, and nobody is asked")
 
-	var l := DotP2PLobby.new()
+	var l := GSP2PLobby.new()
 	l.add_member(&"zoe", "Zoe", 100)
 	l.add_member(&"ada", "Ada", 200)
 	l.add_member(&"bob", "Bob", 300)
@@ -191,7 +191,7 @@ func _test_election() -> void:
 	# The whole reason it is a pure function: the moment a host disappears is exactly the
 	# moment messages are not arriving, so an election that needs agreement needs a round
 	# of messages that cannot happen.
-	var mirror := DotP2PLobby.new()
+	var mirror := GSP2PLobby.new()
 	mirror.add_member(&"bob", "Bob", 300)
 	mirror.add_member(&"zoe", "Zoe", 100)
 	mirror.add_member(&"ada", "Ada", 200)
@@ -207,7 +207,7 @@ func _test_election() -> void:
 	)
 	l.note_unstable(&"zoe", true)
 
-	var tied := DotP2PLobby.new()
+	var tied := GSP2PLobby.new()
 	tied.add_member(&"bbb", "B", 100)
 	tied.add_member(&"aaa", "A", 100)
 	_check(
@@ -231,7 +231,7 @@ func _test_election() -> void:
 	# order is stable, then longest in the session, then the lowest id, and adding a
 	# measured number to that would make two peers able to elect differently -- so the
 	# check is that it is recorded and reported and changes nothing about who hosts.
-	var latency_lobby := DotP2PLobby.new()
+	var latency_lobby := GSP2PLobby.new()
 	latency_lobby.add_member(&"ada", "Ada", 100)
 	latency_lobby.add_member(&"bob", "Bob", 200)
 	var before_host := latency_lobby.elect_host()
@@ -257,10 +257,10 @@ func _test_election() -> void:
 func _test_signalling() -> void:
 	_section("A rendezvous, which peer-to-peer cannot do without")
 
-	DotP2PSignallerLoopback.reset_all()
+	GSP2PSignallerLoopback.reset_all()
 
-	var a := DotP2PSignallerLoopback.new(&"ada")
-	var b := DotP2PSignallerLoopback.new(&"bob")
+	var a := GSP2PSignallerLoopback.new(&"ada")
+	var b := GSP2PSignallerLoopback.new(&"bob")
 
 	var a_got := []
 	var b_got := []
@@ -292,11 +292,11 @@ func _test_signalling() -> void:
 	_check(a_got.size() == 1 and a_got.back()["kind"] == "left", "leaving is announced")
 	_check(not b.connected(), "and the leaver knows it has left")
 
-	DotP2PSignallerLoopback.reset_all()
+	GSP2PSignallerLoopback.reset_all()
 	# Static state that survives a test is the bug game-hungario's dedicated suite shipped:
 	# it wrote to user://, the totals accumulated across runs, and it started failing on
 	# its ninth run for a reason that had nothing to do with the code.
-	var c := DotP2PSignallerLoopback.new(&"cyd")
+	var c := GSP2PSignallerLoopback.new(&"cyd")
 	_check(c.host("ABC123", {}).ok, "and the code is free again after a reset")
 
 
@@ -305,19 +305,19 @@ func _test_signalling() -> void:
 func _test_session() -> void:
 	_section("Two sessions in one process")
 
-	DotP2PSignallerLoopback.reset_all()
+	GSP2PSignallerLoopback.reset_all()
 
 	var host := _session(&"ada")
 	var guest := _session(&"bob")
 
-	var code_res: DotResult = await host.host("Ada")
+	var code_res: GSResult = await host.host("Ada")
 	_check(code_res.ok, "hosting produces a join code")
 	var code: String = code_res.value
-	_check(DotP2PLobby.is_code_shaped(code, 6), "which is well formed")
+	_check(GSP2PLobby.is_code_shaped(code, 6), "which is well formed")
 	_check(host.is_host(), "and the host is the host")
 	_check(host.lobby.members.size() == 1, "with one member")
 
-	var joined: DotResult = await guest.join(code, "Bob")
+	var joined: GSResult = await guest.join(code, "Bob")
 	_check(joined.ok, "the guest joins")
 	_check(host.lobby.members.size() == 2, "and the host sees them")
 	_check(guest.lobby.members.size() == 2, "and they see the host")
@@ -325,16 +325,16 @@ func _test_session() -> void:
 
 	# A peer that declares itself host is how a session is stolen. The election is a pure
 	# function every peer can compute, so a claim is never believed over the arithmetic.
-	(guest.signaller as DotP2PSignallerLoopback).send(&"", &"host", {})
+	(guest.signaller as GSP2PSignallerLoopback).send(&"", &"host", {})
 	_check(
 		host.lobby.host_id != guest.local_id,
 		"a peer claiming to be host is refused, because the election says otherwise"
 	)
 
 	var ended := []
-	guest.ended.connect(func(r: DotResult) -> void: ended.append(r))
+	guest.ended.connect(func(r: GSResult) -> void: ended.append(r))
 	host.leave()
-	(host.signaller as DotP2PSignallerLoopback).leave()
+	(host.signaller as GSP2PSignallerLoopback).leave()
 	_check(
 		guest.lobby.host_id == guest.local_id,
 		"the host leaving makes the remaining peer the host, with no round of messages"
@@ -350,15 +350,15 @@ func _test_session() -> void:
 	# and the request reached nobody. Both positions are tested, because the default is the
 	# one that has to keep working -- a lobby is reachable by its code either way, and the
 	# flag decides only whether a browser may show it without one.
-	DotP2PSignallerLoopback.reset_all()
+	GSP2PSignallerLoopback.reset_all()
 	var quiet := _session(&"quiet")
 	var quiet_code: String = (await quiet.host("Quiet")).value
 	_check(
-		DotP2PSignallerLoopback.room_info(quiet_code).get("discoverable", null) == false,
+		GSP2PSignallerLoopback.room_info(quiet_code).get("discoverable", null) == false,
 		"a lobby announces that it is not to be listed"
 	)
 	_check(
-		not DotP2PSignallerLoopback.listed_codes().has(quiet_code),
+		not GSP2PSignallerLoopback.listed_codes().has(quiet_code),
 		"and a browser reading the signalling service does not show it"
 	)
 
@@ -366,15 +366,15 @@ func _test_session() -> void:
 	open_session.config.discoverable = true
 	var open_code: String = (await open_session.host("Open")).value
 	_check(
-		DotP2PSignallerLoopback.room_info(open_code).get("discoverable", null) == true,
+		GSP2PSignallerLoopback.room_info(open_code).get("discoverable", null) == true,
 		"a lobby that asked to be listed says so in its announcement"
 	)
 	_check(
-		DotP2PSignallerLoopback.listed_codes().has(open_code),
+		GSP2PSignallerLoopback.listed_codes().has(open_code),
 		"and the browser shows that one"
 	)
 	_check(
-		DotP2PSignallerLoopback.listed_codes().size() == 1,
+		GSP2PSignallerLoopback.listed_codes().size() == 1,
 		"and only that one, so the flag is what decides rather than the listing being all-or-nothing"
 	)
 
@@ -386,7 +386,7 @@ func _test_session() -> void:
 	# `_check_host_alive` and gets migrated away from mid-session. Asserted through the
 	# migration rather than through the field, because the field is private and the
 	# migration is the behaviour.
-	DotP2PSignallerLoopback.reset_all()
+	GSP2PSignallerLoopback.reset_all()
 	var beat_host := _session(&"aaa_host")
 	var beat_code: String = (await beat_host.host("Host")).value
 	var beat_guest := _session(&"zzz_guest")
@@ -425,11 +425,11 @@ func _test_transport_absence() -> void:
 	# WebRTC extension -- and a script that NAMES an absent class does not fail at
 	# runtime, it fails to COMPILE, taking every script that references it down as an
 	# apparently unrelated cascade. Everything here goes through ClassDB by string.
-	var present := DotP2PSession.available()
+	var present := GSP2PSession.available()
 	_check(true, "asking whether WebRTC is available does not crash (it is %s)" % present)
 
 	if not present:
-		var why := DotP2PSession.unavailable_reason()
+		var why := GSP2PSession.unavailable_reason()
 		_check(why != "", "and an unavailable build explains itself")
 		_check(
 			why.contains("GDExtension") or why.contains("browser"),
@@ -439,7 +439,7 @@ func _test_transport_absence() -> void:
 		var s := _session(&"solo")
 		var res := s.create_peer()
 		_check(not res.ok, "creating a peer is a refusal rather than a crash")
-		_check(res.code() == DotError.CODE_UNSUPPORTED, "with CODE_UNSUPPORTED")
+		_check(res.code() == GSError.CODE_UNSUPPORTED, "with CODE_UNSUPPORTED")
 		_check(res.error.detail != "", "and the reason travels with it")
 		_check(s.peer() == null, "and nothing was built")
 		s.queue_free()
@@ -452,7 +452,7 @@ func _test_transport_absence() -> void:
 
 	var no_meeting := _session(&"lonely")
 	no_meeting.signaller = null
-	var refused: DotResult = await no_meeting.host("Nobody")
+	var refused: GSResult = await no_meeting.host("Nobody")
 	_check(not refused.ok, "hosting with no signaller is refused")
 	_check(
 		refused.error.message.contains("nowhere to meet"),
@@ -463,16 +463,16 @@ func _test_transport_absence() -> void:
 
 # --- A signaller that awaits ---------------------------------------------------
 
-## A DotHttp that answers a POST a frame later, the way a real one does, without a socket.
-class SlowHttp extends DotHttp:
+## A GSHttp that answers a POST a frame later, the way a real one does, without a socket.
+class SlowHttp extends GSHttp:
 	var posted: Array[String] = []
 
-	func post_json(path: String, _body: Variant, _headers: Dictionary = {}) -> DotResult:
+	func post_json(path: String, _body: Variant, _headers: Dictionary = {}) -> GSResult:
 		posted.append(path)
 		await Engine.get_main_loop().process_frame
 		if path.ends_with("/join"):
-			return DotResult.success({"peers": ["ada"]})
-		return DotResult.success({})
+			return GSResult.success({"peers": ["ada"]})
+		return GSResult.success({})
 
 
 ## The real HTTP signaller, whose host() and join() are coroutines. The session called them
@@ -486,15 +486,15 @@ func _test_a_signaller_that_awaits() -> void:
 	add_child(http)
 
 	var host := _session(&"ada")
-	host.signaller = DotP2PSignallerHttp.new("http://rendezvous.invalid", &"ada", http)
-	var hosted: DotResult = await host.host("Ada")
+	host.signaller = GSP2PSignallerHttp.new("http://rendezvous.invalid", &"ada", http)
+	var hosted: GSResult = await host.host("Ada")
 	_check(hosted != null and hosted.ok, "hosting through a coroutine signaller returns a result")
 	_check(host.state() == &"hosting", "and the session is hosting, not left idle")
 	_check(http.posted.size() == 1 and http.posted[0].ends_with("/host"), "having announced itself")
 
 	var guest := _session(&"bob")
-	guest.signaller = DotP2PSignallerHttp.new("http://rendezvous.invalid", &"bob", http)
-	var joined: DotResult = await guest.join(String(hosted.value) if hosted != null and hosted.ok else "AAAAAA", "Bob")
+	guest.signaller = GSP2PSignallerHttp.new("http://rendezvous.invalid", &"bob", http)
+	var joined: GSResult = await guest.join(String(hosted.value) if hosted != null and hosted.ok else "AAAAAA", "Bob")
 	_check(joined != null and joined.ok and guest.state() == &"joining", "joining through one works too")
 	_check(guest.lobby.members.size() == 2, "and the peers the rendezvous named are in the lobby")
 
@@ -505,12 +505,12 @@ func _test_a_signaller_that_awaits() -> void:
 
 # --- Harness ---------------------------------------------------------------
 
-func _session(id: StringName) -> DotP2PSession:
-	var s := DotP2PSession.new()
-	s.config = DotP2PConfig.new()
+func _session(id: StringName) -> GSP2PSession:
+	var s := GSP2PSession.new()
+	s.config = GSP2PConfig.new()
 	s.local_id = id
 	s.register_as_service = false
-	s.signaller = DotP2PSignallerLoopback.new(id)
+	s.signaller = GSP2PSignallerLoopback.new(id)
 	add_child(s)
 	s.setup()
 	return s

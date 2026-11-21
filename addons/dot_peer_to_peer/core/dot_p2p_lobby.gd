@@ -1,4 +1,4 @@
-class_name DotP2PLobby
+class_name GSP2PLobby
 extends RefCounted
 
 ## Who is in the session, who is hosting, and who hosts next.
@@ -10,7 +10,7 @@ extends RefCounted
 ## of it involves a socket.
 ##
 ## This class deliberately holds no connection at all. It is the state a
-## [DotP2PSession] keeps and the suite drives it directly.
+## [GSP2PSession] keeps and the suite drives it directly.
 
 ## Somebody arrived or left.
 signal membership_changed(members: PackedStringArray)
@@ -63,11 +63,11 @@ static func is_code_shaped(candidate: String, length: int) -> bool:
 	return true
 
 
-func add_member(id: StringName, name: String, now_ms: int) -> DotResult:
+func add_member(id: StringName, name: String, now_ms: int) -> GSResult:
 	if members.has(id):
-		return DotResult.fail(DotError.CODE_STATE, "'%s' is already in this session" % id)
+		return GSResult.fail(GSError.CODE_STATE, "'%s' is already in this session" % id)
 	if members.size() >= max_peers:
-		return DotResult.fail(DotError.CODE_QUOTA, "the session is full")
+		return GSResult.fail(GSError.CODE_QUOTA, "the session is full")
 	members[id] = {
 		"name": name,
 		"ready": false,
@@ -82,7 +82,7 @@ func add_member(id: StringName, name: String, now_ms: int) -> DotResult:
 	# somebody else's session. It cost exactly that in this addon's own suite. The session
 	# sets `host_id` when it hosts, and elects otherwise.
 	membership_changed.emit(member_ids())
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 func remove_member(id: StringName) -> void:
@@ -192,7 +192,7 @@ func migrate_from(gone: StringName) -> StringName:
 	host_id = next
 	if next != previous:
 		host_changed.emit(previous, next)
-		DotLog.info(CHANNEL, "host migrated", {"from": String(previous), "to": String(next)})
+		GSLog.info(CHANNEL, "host migrated", {"from": String(previous), "to": String(next)})
 	return next
 
 

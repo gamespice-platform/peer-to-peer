@@ -11,9 +11,9 @@ Copy `addons/dot_peer_to_peer/` and [GameSpice Core](https://github.com/gamespic
 ## Use
 
 ```gdscript
-var p2p := DotP2PSession.new()
+var p2p := GSP2PSession.new()
 p2p.config = my_config
-p2p.signaller = DotP2PSignallerHttp.new(url, my_id, http)
+p2p.signaller = GSP2PSignallerHttp.new(url, my_id, http)
 add_child(p2p)
 p2p.setup()
 
@@ -21,23 +21,23 @@ var code = (await p2p.host("Ada")).value   # show this to a friend
 await p2p.join("K7M4PX", "Bob")                # or type theirs
 ```
 
-A `DotP2PSignaller` is four calls (verbs). A loopback one ships for tests and split screen, and an HTTP one ships for anything with a URL and four routes. A lobby service or an existing WebSocket is a subclass.
+A `GSP2PSignaller` is four calls (verbs). A loopback one ships for tests and split screen, and an HTTP one ships for anything with a URL and four routes. A lobby service or an existing WebSocket is a subclass.
 
 If WebRTC is missing (a desktop build without the GDExtension) the code still parses and runs:
 
 ```gdscript
-if not DotP2PSession.available():
-    push_warning(DotP2PSession.unavailable_reason())
+if not GSP2PSession.available():
+    push_warning(GSP2PSession.unavailable_reason())
 ```
 
 ## How it works
 
 | Part | What it does |
 | --- | --- |
-| `DotP2PLobby` | Members, readiness and join slots. It holds no connection, so a headless test covers every race (two people taking one slot, a reused code, two hosts). |
+| `GSP2PLobby` | Members, readiness and join slots. It holds no connection, so a headless test covers every race (two people taking one slot, a reused code, two hosts). |
 | Host election | `lobby.elect_host()` is a pure function: stable first, then longest in the session, then lowest id. Every peer computes it from the member list it already has, so no messages are needed when a host disappears. |
 | Join code | Six characters from `23456789ABCDEFGHJKLMNPQRSTUVWXYZ` (no 0, O, 1, I or l), about a billion codes. Its shape is checked before any lookup. |
-| `DotP2PConfig.Trust` | How far a host is trusted: host-authoritative (co-op among friends), verified (catches a careless host, not a determined one) or sandboxed (no records, statistics or leaderboard leave the session). |
+| `GSP2PConfig.Trust` | How far a host is trusted: host-authoritative (co-op among friends), verified (catches a careless host, not a determined one) or sandboxed (no records, statistics or leaderboard leave the session). |
 
 ## Limits you cannot code around
 

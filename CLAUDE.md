@@ -17,12 +17,12 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is sp
 
 | Path | What |
 | --- | --- |
-| `core/dot_p2p_config.gd` | `DotP2PConfig`: rendezvous, ICE, `relay_servers`, codes, migration, `Trust` |
-| `core/dot_p2p_lobby.gd` | `DotP2PLobby`: members, readiness, codes (`ALPHABET`), `member_ids()`, `elect_host()` |
-| `core/dot_p2p_signaller.gd` | `DotP2PSignaller`: `host`, `join`, `send`, `leave` |
+| `core/dot_p2p_config.gd` | `GSP2PConfig`: rendezvous, ICE, `relay_servers`, codes, migration, `Trust` |
+| `core/dot_p2p_lobby.gd` | `GSP2PLobby`: members, readiness, codes (`ALPHABET`), `member_ids()`, `elect_host()` |
+| `core/dot_p2p_signaller.gd` | `GSP2PSignaller`: `host`, `join`, `send`, `leave` |
 | `core/dot_p2p_signaller_loopback.gd` | in-process signalling; static switchboards, `reset_all()` |
-| `core/dot_p2p_signaller_http.gd` | post and poll over `DotHttp`; the game calls `poll()` |
-| `runtime/dot_p2p_session.gd` | `DotP2PSession`: the node a game holds, the only file touching a transport |
+| `core/dot_p2p_signaller_http.gd` | post and poll over `GSHttp`; the game calls `poll()` |
+| `runtime/dot_p2p_session.gd` | `GSP2PSession`: the node a game holds, the only file touching a transport |
 | `examples/p2p_selftest.tscn` | the suite: no network, no WebRTC needed |
 
 Paths except `examples/` are in `addons/dot_peer_to_peer/`.
@@ -41,6 +41,6 @@ The family's two steps ([family CLAUDE.md](../../CLAUDE.md#validating-anything))
 - No relay by default and a host can cheat: say so at boot, never hide it behind a default. [design](docs/design.md#the-three-uncomfortable-facts-and-where-each-one-lives)
 - Never use `OS.get_unique_id()` for the local id. [design](docs/design.md#decisions)
 - Losing the signaller does not end the session; the game, not the signaller, decides when to stop polling. [design](docs/design.md#decisions)
-- Call `DotP2PSignallerLoopback.reset_all()` between tests. [design](docs/design.md#decisions)
+- Call `GSP2PSignallerLoopback.reset_all()` between tests. [design](docs/design.md#decisions)
 
 Deliberately not here: a rendezvous server, NAT traversal, replication, trusting a host, anti-cheat. [design](docs/design.md#deliberately-not-here)

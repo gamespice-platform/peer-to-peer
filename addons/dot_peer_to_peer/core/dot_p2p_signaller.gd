@@ -1,4 +1,4 @@
-class_name DotP2PSignaller
+class_name GSP2PSignaller
 extends RefCounted
 
 ## How two peers exchange the handful of messages they need to find each other.
@@ -11,7 +11,7 @@ extends RefCounted
 ## The interface is deliberately tiny -- four verbs -- because every deployment has a
 ## different answer for where the rendezvous lives: a backbone, a lobby service, a
 ## WebSocket the game already has, a QR code and a clipboard. Two ship here:
-## [DotP2PSignallerLoopback] for a suite, and [DotP2PSignallerHttp] for anything with a
+## [GSP2PSignallerLoopback] for a suite, and [GSP2PSignallerHttp] for anything with a
 ## URL.
 
 ## Something arrived for us. [code]{from, kind, payload}[/code].
@@ -22,18 +22,18 @@ signal disconnected(reason: String)
 
 
 ## Announces a session and returns its code.
-func host(_code: String, _info: Dictionary) -> DotResult:
-	return DotResult.fail(DotError.CODE_UNSUPPORTED, "this signaller cannot host")
+func host(_code: String, _info: Dictionary) -> GSResult:
+	return GSResult.fail(GSError.CODE_UNSUPPORTED, "this signaller cannot host")
 
 
 ## Asks to join a session by code.
-func join(_code: String, _info: Dictionary) -> DotResult:
-	return DotResult.fail(DotError.CODE_UNSUPPORTED, "this signaller cannot join")
+func join(_code: String, _info: Dictionary) -> GSResult:
+	return GSResult.fail(GSError.CODE_UNSUPPORTED, "this signaller cannot join")
 
 
 ## Sends one message to one peer, or to everybody when [param to] is empty.
-func send(_to: StringName, _kind: StringName, _payload: Dictionary) -> DotResult:
-	return DotResult.fail(DotError.CODE_UNSUPPORTED, "this signaller cannot send")
+func send(_to: StringName, _kind: StringName, _payload: Dictionary) -> GSResult:
+	return GSResult.fail(GSError.CODE_UNSUPPORTED, "this signaller cannot send")
 
 
 ## Stops. A signaller is finished with once the peers are connected.
