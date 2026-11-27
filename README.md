@@ -2,7 +2,7 @@
 
 Sessions that players host for each other: join codes, a lobby, readiness, deterministic host migration, and a plain account of what NAT will not let you do.
 
-Part of the [**GameSpice**](https://gamespice.net) collection: modular, MIT-licensed building blocks for games on the GameSpice platform (only the TMC website back end is closed). It was built with Claude Code and its headless suite passes, but little of it has met real players yet, so expect rough edges and please report what you find.
+Part of the [**GameSpice**](https://gamespice.net) collection: modular, MIT-licensed building blocks for games on the GameSpice platform (only the TMC website back end is closed). The addon is MIT, built with Claude Code, and ships a headless suite (`p2p_selftest`, see Test). It is used for real: the games in [Zee's Games](https://zeesgames.com) are built on GameSpice addons and run on live servers.
 
 ## Install
 
@@ -51,6 +51,18 @@ if not GSP2PSession.available():
 godot --headless --path . --import
 godot --headless --path . res://examples/p2p_selftest.tscn
 ```
+
+## Used by
+
+These games carry it in their addons folder:
+
+- [Hungario](https://zeesgames.com/hungario)
+- [Airdrift](https://zeesgames.com/airdrift)
+- [Zombie Zone](https://zeesgames.com/zombie-zone)
+- [Fatal Contact](https://zeesgames.com/fatal-contact)
+- [Playlot](https://zeesgames.com/playlot)
+
+The whole collection is at [zeesgames.com](https://zeesgames.com).
 
 ## Licence
 
